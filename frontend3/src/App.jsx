@@ -45,7 +45,7 @@ function App() {
         await axios.post(
           `${API}/my-stock`,
           {
-            telegramId: 123456789
+            telegramId: telegramUser?.id
           }
         )
 
@@ -81,7 +81,7 @@ function App() {
         await axios.post(
           `${API}/history`,
           {
-            telegramId: 123456789
+            telegramId: telegramUser?.id
           }
         )
 
@@ -109,26 +109,30 @@ function App() {
   |--------------------------------------------------------------------------
   */
 
-  useEffect(() => {
+ useEffect(() => {
 
-    const tg =
-  window.Telegram.WebApp
+  const tg =
+    window.Telegram.WebApp
 
-tg.ready()
+  tg.ready()
 
-const user =
-  tg.initDataUnsafe?.user
+  const user =
+    tg.initDataUnsafe?.user
 
-console.log(user)
+  console.log(user)
 
-setTelegramUser(user)
+  setTelegramUser(user)
 
-    loadStock()
+}, [])
+useEffect(() => {
 
-    loadHistory()
+  if (!telegramUser) return
 
-  }, [])
+  loadStock()
 
+  loadHistory()
+
+}, [telegramUser])
   /*
   |--------------------------------------------------------------------------
   | Списание
