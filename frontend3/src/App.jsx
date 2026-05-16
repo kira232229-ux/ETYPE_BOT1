@@ -155,6 +155,9 @@ useEffect(() => {
       await axios.post(
         `${API}/writeoff`,
         {
+           telegramId:
+      telegramUser?.id,
+      
           productId:
             selectedProduct.id,
 
