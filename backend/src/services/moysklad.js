@@ -66,7 +66,7 @@ export async function getStockByStore(storeId) {
 
       params: {
         filter:
-          `store=${storeId}`,
+          `store=https://api.moysklad.ru/api/remap/1.2/entity/store/${storeId}`
       },
     }
   )
