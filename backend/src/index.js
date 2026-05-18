@@ -165,7 +165,9 @@ app.post('/my-stock', async (req, res) => {
     }
 
     const stock =
-      await getStockByStore();
+  await getStockByStore(
+    worker.storeId
+  );
 
     res.json(stock);
   } catch (error) {
