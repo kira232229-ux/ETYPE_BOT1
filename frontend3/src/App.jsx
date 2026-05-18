@@ -1,41 +1,62 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 
+const API = 'http://localhost:3000'
+
 function App() {
 
-  const API =
-    'http://127.0.0.1:3000'
-
-  /*
-  |--------------------------------------------------------------------------
-  | STATE
-  |--------------------------------------------------------------------------
-  */
-
-  const [stock, setStock] =
-    useState([])
-
-  const [selectedProduct,
-    setSelectedProduct] =
+  const [telegramUser, setTelegramUser] =
     useState(null)
 
-  const [quantity,
-    setQuantity] =
-    useState(1)
-
-  const [history,
-    setHistory] =
+  const [materials, setMaterials] =
     useState([])
-    
-  const [telegramUser,
-  setTelegramUser] =
-  useState(null)
 
-  /*
-  |--------------------------------------------------------------------------
-  | Загрузка материалов
-  |--------------------------------------------------------------------------
-  */
+  const [history, setHistory] =
+    useState([])
+
+  useEffect(() => {
+
+  console.log(window.Telegram)
+
+  const tg =
+    window.Telegram?.WebApp
+
+  console.log(tg)
+
+  if (
+    tg &&
+    tg.initDataUnsafe &&
+    tg.initDataUnsafe.user
+  ) {
+
+    tg.ready()
+
+    const user =
+      tg.initDataUnsafe.user
+
+    console.log(user)
+
+    setTelegramUser(user)
+
+  } else {
+
+   console.log(
+      'TELEGRAM USER NOT FOUND'
+    )
+
+  }
+
+}, [])
+
+  useEffect(() => {
+
+    if (!telegramUser) return
+
+    loadStock()
+
+    loadHistory()
+
+  }, [telegramUser])
 
   async function loadStock() {
 
@@ -45,19 +66,14 @@ function App() {
         await axios.post(
           `${API}/my-stock`,
           {
-            telegramId: telegramUser?.id
+            telegramId:
+              telegramUser.id
           }
         )
 
-      if (Array.isArray(response.data)) {
+      console.log(response.data)
 
-  setStock(response.data)
-
-} else {
-
-  setStock([])
-
-}
+      setMaterials(response.data)
 
     } catch (error) {
 
@@ -66,12 +82,6 @@ function App() {
     }
 
   }
-
-  /*
-  |--------------------------------------------------------------------------
-  | История списаний
-  |--------------------------------------------------------------------------
-  */
 
   async function loadHistory() {
 
@@ -81,19 +91,12 @@ function App() {
         await axios.post(
           `${API}/history`,
           {
-            telegramId: telegramUser?.id
+            telegramId:
+              telegramUser.id
           }
         )
 
-      if (Array.isArray(response.data)) {
-
-  setHistory(response.data)
-
-} else {
-
-  setHistory([])
-
-}
+      setHistory(response.data)
 
     } catch (error) {
 
@@ -103,84 +106,33 @@ function App() {
 
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Загрузка при старте
-  |--------------------------------------------------------------------------
-  */
-
- useEffect(() => {
-
-  const tg =
-    window.Telegram.WebApp
-
-  tg.ready()
-
-  const user =
-    tg.initDataUnsafe?.user
-
-  console.log(user)
-
-  setTelegramUser(user)
-
-}, [])
-useEffect(() => {
-
-  if (!telegramUser) return
-
-  loadStock()
-
-  loadHistory()
-
-}, [telegramUser])
-  /*
-  |--------------------------------------------------------------------------
-  | Списание
-  |--------------------------------------------------------------------------
-  */
-
-  async function writeoff() {
-
-    if (!selectedProduct) {
-
-      alert(
-        'Выберите материал'
-      )
-
-      return
-    }
+  async function writeoff(productId) {
 
     try {
 
       await axios.post(
         `${API}/writeoff`,
         {
-           telegramId:
-      telegramUser?.id,
-      
-          productId:
-            selectedProduct.id,
+          telegramId:
+            telegramUser.id,
 
-          quantity:
-            Number(quantity)
+          productId,
+
+          quantity: 1
         }
       )
 
-      alert(
-        'Материал списан'
-      )
+      await loadStock()
 
-      loadStock()
+      await loadHistory()
 
-      loadHistory()
+      alert('Материал списан')
 
     } catch (error) {
 
       console.log(error)
 
-      alert(
-        'Ошибка списания'
-      )
+      alert('Ошибка списания')
 
     }
 
@@ -191,6 +143,9 @@ useEffect(() => {
     <div
       style={{
         padding: 20,
+        background: '#0f172a',
+        minHeight: '100vh',
+        color: 'white',
         fontFamily: 'Arial'
       }}
     >
@@ -198,125 +153,83 @@ useEffect(() => {
       <h1>
         Склад монтажника
       </h1>
-{
-  telegramUser && (
 
-    <div
-      style={{
-        marginBottom: 20
-      }}
-    >
+      {
+        telegramUser && (
 
-      <div>
-        ID:
-        {' '}
-        {telegramUser.id}
-      </div>
+          <div
+            style={{
+              marginBottom: 30
+            }}
+          >
 
-      <div>
-        Имя:
-        {' '}
-        {telegramUser.first_name}
-      </div>
+            <div>
+              ID:
+              {' '}
+              {telegramUser.id}
+            </div>
 
-      <div>
-        Username:
-        {' '}
-        @{telegramUser.username}
-      </div>
+            <div>
+              Имя:
+              {' '}
+              {telegramUser.first_name}
+            </div>
 
-    </div>
+            <div>
+              Username:
+              {' '}
+              @{telegramUser.username}
+            </div>
 
-  )
-}
+          </div>
+
+        )
+      }
+
       <h2>
         Материалы
       </h2>
 
       {
-        stock.map((item, index) => (
+        materials.map(product => (
 
           <div
-            key={index}
-            onClick={() =>
-              setSelectedProduct(item)
-            }
+            key={product.id}
             style={{
-
-              border:
-                selectedProduct?.id === item.id
-                  ? '2px solid green'
-                  : '1px solid #ccc',
-
+              border: '1px solid gray',
+              padding: 15,
               borderRadius: 10,
-
-              padding: 10,
-
-              marginBottom: 10,
-
-              cursor: 'pointer'
+              marginBottom: 15
             }}
           >
 
-            <div>
-              <b>
-                {item.name}
-              </b>
-            </div>
+            <h3>
+              {product.name}
+            </h3>
 
             <div>
               Остаток:
               {' '}
-              {item.quantity}
+              {product.stock}
             </div>
 
-            <div>
-              Цена:
-              {' '}
-              {item.price}
-            </div>
+            <button
+              onClick={() =>
+                writeoff(product.id)
+              }
+              style={{
+                marginTop: 10,
+                padding: 10,
+                cursor: 'pointer'
+              }}
+            >
+              Списать
+            </button>
 
           </div>
 
         ))
       }
-
-      <div
-        style={{
-          marginTop: 20
-        }}
-      >
-
-        <input
-          type="number"
-          value={quantity}
-          onChange={(e) =>
-            setQuantity(
-              e.target.value
-            )
-          }
-          style={{
-            padding: 10,
-            width: 100
-          }}
-        />
-
-      </div>
-
-      <button
-        onClick={writeoff}
-        style={{
-          marginTop: 20,
-          padding:
-            '12px 20px',
-
-          cursor: 'pointer'
-        }}
-      >
-
-        Списать материал
-
-      </button>
 
       <h2
         style={{
@@ -327,42 +240,30 @@ useEffect(() => {
       </h2>
 
       {
-        history.map((item, index) => (
+        history.map(item => (
 
           <div
-            key={index}
+            key={item.id}
             style={{
-              border:
-                '1px solid #ccc',
-
-              padding: 10,
-
+              border: '1px solid gray',
+              padding: 15,
               borderRadius: 10,
-
-              marginBottom: 10
+              marginBottom: 15
             }}
           >
 
             <div>
-              ID:
-              {' '}
-              {item.id}
+              {item.productName}
             </div>
 
             <div>
-              Дата:
+              Количество:
               {' '}
+              {item.quantity}
+            </div>
+
+            <div>
               {item.date}
-            </div>
-
-            <div>
-              Проведен:
-              {' '}
-              {
-                item.applicable
-                  ? 'Да'
-                  : 'Нет'
-              }
             </div>
 
           </div>
@@ -373,6 +274,7 @@ useEffect(() => {
     </div>
 
   )
+
 }
 
 export default App
