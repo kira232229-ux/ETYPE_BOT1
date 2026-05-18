@@ -54,34 +54,48 @@ export async function getProducts() {
 |--------------------------------------------------------------------------
 */
 
-export async function getStockByStore() {
+export async function getStockByStore(storeId) {
 
   const response = await axios.get(
-    `${BASE_URL}/report/stock/all`,
-    { headers }
-  );
+    'https://api.moysklad.ru/api/remap/1.2/report/stock/all',
+    {
+      headers: {
+        Authorization:
+          `Bearer ${process.env.MOYSKLAD_TOKEN}`,
+      },
 
-  return response.data.rows.map(item => ({
+      params: {
+        filter:
+          `store=${storeId}`,
+      },
+    }
+  )
+
+  const rows =
+    response.data.rows || []
+
+  return rows.map(item => ({
 
     id:
-      item.meta?.href
-        ?.split('/')
-        ?.pop()
-        ?.split('?')[0],
+      item.meta.href
+        .split('/')
+        .pop()
+        .split('?')[0],
 
     name:
       item.name,
 
-    quantity:
-      item.stock || 0,
+    stock:
+      item.stock,
 
     price:
-      item.salePrice / 100 || 0
+      item.salePrice
+        ? item.salePrice / 100
+        : 0,
 
-  }));
+  }))
 
 }
-
 /*
 |--------------------------------------------------------------------------
 | Создание списания
