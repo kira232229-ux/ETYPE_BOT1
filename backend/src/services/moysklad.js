@@ -140,23 +140,21 @@ export async function createWriteoff(
       },
 
       positions: [
-        {
-          quantity,
+  {
+    quantity: quantity,
 
-          assortment: {
-            meta: {
-              href:
-                `${BASE_URL}/entity/product/${productId}`,
+    assortment: {
+      meta: {
+        href:
+          `https://api.moysklad.ru/api/remap/1.2/entity/product/${productId}`,
 
-              type:
-                'product',
-
-              mediaType:
-                'application/json',
-            },
-          },
-        },
-      ],
+        type: 'product',
+        mediaType:
+          'application/json'
+      }
+    }
+  }
+]
     },
 
     { headers }
