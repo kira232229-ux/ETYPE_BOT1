@@ -14,6 +14,9 @@ function App() {
   const [history, setHistory] =
     useState([])
 
+  const [quantities, setQuantities] =
+  useState({})
+
   useEffect(() => {
 
   console.log(window.Telegram)
@@ -106,7 +109,11 @@ function App() {
 
   }
 
-  async function writeoff(productId) {
+  async function writeoff(
+  productId,
+  quantity
+) 
+{
 
     try {
 
@@ -118,7 +125,7 @@ function App() {
 
           productId,
 
-          quantity: 1
+          quantity
         }
       )
 
@@ -213,23 +220,75 @@ function App() {
               {product.stock}
             </div>
 
-            <button
-              onClick={() =>
-                writeoff(product.id)
-              }
-              style={{
-                marginTop: 10,
-                padding: 10,
-                cursor: 'pointer'
-              }}
-            >
-              Списать
-            </button>
+            <div
+  style={{
+    display: 'flex',
+    gap: 10,
+    marginTop: 10,
+    alignItems: 'center'
+  }}
+>
 
-          </div>
+  <button
+    onClick={() => {
 
-        ))
-      }
+      const current =
+        quantities[product.id] || 1
+
+      if (current <= 1) return
+
+      setQuantities({
+        ...quantities,
+        [product.id]:
+          current - 1
+      })
+
+    }}
+  >
+    -
+  </button>
+
+  <div>
+    {
+      quantities[product.id] || 1
+    }
+  </div>
+
+  <button
+    onClick={() => {
+
+      const current =
+        quantities[product.id] || 1
+
+      setQuantities({
+        ...quantities,
+        [product.id]:
+          current + 1
+      })
+
+    }}
+  >
+    +
+  </button>
+
+  <button
+    onClick={() =>
+      writeoff(
+        product.id,
+        quantities[product.id] || 1
+      )
+    }
+    style={{
+      padding:
+        '10px 15px',
+
+      cursor: 'pointer'
+    }}
+  >
+    Списать
+  </button>
+
+</div>
 
       <h2
         style={{
