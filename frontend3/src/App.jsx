@@ -278,17 +278,15 @@ function App() {
         quantities[product.id] || 1
       )
     }
-    style={{
-      padding:
-        '10px 15px',
-
-      cursor: 'pointer'
-    }}
   >
     Списать
   </button>
 
 </div>
+
+        ))
+
+      }
 
       <h2
         style={{
